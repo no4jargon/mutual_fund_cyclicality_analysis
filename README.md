@@ -18,7 +18,7 @@
   </a>
 </p>
 
-This repository hosts a **daily-updated dataset** focusing on Indian Mutual Fund schemes. It includes crucial details like Net Asset Value (NAV), Asset Management Company (AMC) info, scheme categories, and more. The data is automatically fetched and processed daily via a  Kaggle Notebook.
+This repository hosts a **daily-updated dataset** focusing on Indian Mutual Fund schemes. It includes crucial details like Net Asset Value (NAV), Asset Management Company (AMC), Assets Under Management (AUM), scheme categories, and more. The data is automatically fetched and processed daily via a  Kaggle Notebook.
 
 ---
 
@@ -38,7 +38,7 @@ This repository hosts a **daily-updated dataset** focusing on Indian Mutual Fund
 
 ## 📜 Description
 
-This dataset provides a comprehensive snapshot of over **9,000+** mutual fund schemes active in the Indian market. Featuring the latest Net Asset Value (NAV) data refreshed daily, it serves as a valuable resource for financial analysis, comparison, and tracking of the Indian mutual fund landscape.
+This dataset provides a comprehensive snapshot of over **9,000+** mutual fund schemes active in the Indian market. Featuring the latest Net Asset Value (NAV) & Assets Under Management (AUM) data refreshed daily, it serves as a valuable resource for financial analysis, comparison, and tracking of the Indian mutual fund landscape.
 
 ---
 
@@ -73,24 +73,30 @@ Instantly explore, filter, and sort the dataset directly in your browser without
 
 **🆔 Fund Identification & Details**
 
-* **`Scheme_Name`**: The primary name of the fund.
-* **`AMC`**: The **Asset Management Company** managing the fund.
-* **`Scheme_Code`**: A unique identifier for the scheme.
-* **`Scheme_NAV_Name`**: A more detailed name, often indicating the specific plan (*e.g., Growth, IDCW/Dividend*).
-* **`ISIN_Div_Payout/Growth` & `ISIN_Div_Reinvestment`**: Unique **ISIN** (*International Securities Identification Number*) codes for different plan options.
-* **`Launch_Date`**: When the scheme started.
-* **`Closure_Date`**: When the scheme closed.
+### 🆔 Fund Identification & Details
 
-**🏷️ Classification**
+* **`Scheme_Code`**: Unique code assigned to a mutual fund scheme.
+* **`AMC`**: The **Asset Management Company** that manages the mutual fund.
+* **`Scheme_Name`**: Name of the mutual fund scheme.
+* **`Scheme_NAV_Name`**: Detailed name of the scheme often indicating the specific plan(*e.g., Growth, IDCW/Dividend*).
+* **`ISIN_Div_Payout/Growth`**: Unique ISIN(*International Securities Identification Number*) for dividend payout or growth option of the scheme.
+* **`ISIN_Div_Reinvestment`**:  Unique ISIN for dividend reinvestment option of the scheme.
+* **`ISIN_Div_Payout/Growth/Div_Reinvestment`**: Comprehensive ISINs covering dividend payout, growth, or dividend reinvestment options, often a combination or primary identifier if others are not specific.
+* **`Lauch_Date`**: Date when the mutual fund scheme was launched
+* **`Closure_Date`**: Date when the mutual fund scheme was closed (*if applicable*)
+
+### 🏷️ Classification
 
 * **`Scheme_Type`**: How the fund is structured (*e.g., Open Ended, Close Ended*).
-* **`Scheme_Category`**: The fund's investment strategy focus (*e.g., Equity Large Cap, Debt Liquid Fund*).
+* **`Scheme_Category`**: Classification of the scheme based on its investment strategy(*e.g., Equity Large Cap, Debt Liquid Fund*).
 
-**💰 Financials & Investment Info**
+### 💰 Financials & Investment Info
 
-* **`NAV`**: The **Net Asset Value** per unit of the scheme.
-* **`Latest_NAV_Date`**: The date the `NAV` was reported.
-* **`Scheme_Min_Amt`**: The minimum initial investment amount required.
+* **`NAV`**: **Net Asset Value** per unit of the fund scheme. 
+* **`Latest_NAV_Date`**: Date on which the **latest NAV** was declared.
+* **`Scheme_Min_Amt`**: Minimum investment amount required to invest in the scheme.
+* **`AAUM_Quarter`**: The quarter for which the average AUM is reported (*e.g., January - March 2025*)
+* **`Average_AUM_Cr`**: Average assets under management in crores for the scheme.
 
 ---
 
