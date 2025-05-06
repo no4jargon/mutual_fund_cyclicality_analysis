@@ -18,9 +18,7 @@
   </a>
 </p>
 
-This repository hosts a **daily-updated dataset** focusing on Indian Mutual Fund schemes. It includes crucial details like Net Asset Value (NAV), Asset Management Company (AMC), Assets Under Management (AUM), scheme categories, and more. The data is automatically fetched and processed daily via a  Kaggle Notebook.
-
----
+----
 
 ## Table of Contents
 
@@ -38,7 +36,7 @@ This repository hosts a **daily-updated dataset** focusing on Indian Mutual Fund
 
 ## 📜 Description
 
-This dataset provides a comprehensive snapshot of over **9,000+** mutual fund schemes active in the Indian market. Featuring the latest Net Asset Value (NAV) & Assets Under Management (AUM) data refreshed daily, it serves as a valuable resource for financial analysis, comparison, and tracking of the Indian mutual fund landscape.
+This dataset offers an extensive look at over **16,000+** Indian mutual fund schemes, covering a wide array including old(closed), currently active, and new/recently launched funds. Featuring the latest **Net Asset Value (NAV)** and **Assets Under Management (AUM)** data, it's designed for easy analysis and comparison!
 
 ---
 
