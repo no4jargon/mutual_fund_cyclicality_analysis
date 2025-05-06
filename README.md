@@ -1,4 +1,4 @@
-# Indian Mutual Fund Dataset 📊
+# India's Ultimate Mutual Fund Dataset 📊
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT">
