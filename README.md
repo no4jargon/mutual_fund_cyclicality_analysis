@@ -149,15 +149,11 @@ The historical NAV data empowers you to quickly derive powerful insights like:
     * Highest/Lowest NAV over periods
     * Average/Median NAV over periods
 
----
-
 ## ⏱️ Update Frequency
 
 * **Daily Updates**: Both `mutual_fund_data.csv` (scheme details) and `mutual_fund_nav_history.parquet` (new daily NAVs) are automatically refreshed every day via a scheduled Kaggle Notebook.
 * Data typically reflects the NAV from the **previous trading day**.
 * The historical NAV file (`mutual_fund_nav_history.parquet`) grows daily with new NAV records for all tracked schemes.
-
----
 
 ## 💡 Potential Uses
 
@@ -168,21 +164,15 @@ The historical NAV data empowers you to quickly derive powerful insights like:
 * ✅ **Market Overview:** Get a quick snapshot of the Indian mutual fund market structure using the scheme details.
 * ✅ **Dashboard Building:** Create visualizations of the Indian MF landscape, tracking NAVs and performance.
 
----
-
 ## 🤝 Contributing
 
 While the data is updated automatically, contributions to improve the README, add analysis examples (e.g., in a separate notebook), or suggest enhancements are welcome! Please feel free to open an issue or submit a pull request.
-
----
 
 ## 🙏 Acknowledgements
 
 * Data is sourced from the **Association of Mutual Funds in India (AMFI)**.
 * This dataset is compiled for educational and analytical purposes.
 * **Always consult a financial advisor before making investment decisions.**
-
----
 
 ## 📄 License
 
