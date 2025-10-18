@@ -6,7 +6,7 @@ import random
 
 import pytest
 
-from cyclicality import CyclicalityAnalyzer, NavSeries
+from simple_cyclicity import CyclicalityAnalyzer, NavSeries
 
 
 @pytest.fixture
