@@ -8,6 +8,8 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_SIMPLE_CONFIG = Path("configs/simple.yaml")
+
 
 def _load_yaml(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as handle:
@@ -28,17 +30,25 @@ def _deep_update(base: dict, override: dict) -> dict:
 
 
 def load_config(config_paths: Iterable[str] | None = None) -> dict:
-    """Load the default configuration and apply optional overrides."""
-    config_paths = list(config_paths or [])
-    default_path = Path("configs/default.yaml")
-    if not default_path.exists():
+    """Load the simple pipeline configuration and apply optional overrides."""
+
+    supplied_paths = list(config_paths or [])
+
+    if supplied_paths:
+        base_path = Path(supplied_paths[0])
+        extra_paths = supplied_paths[1:]
+    else:
+        base_path = DEFAULT_SIMPLE_CONFIG
+        extra_paths = []
+
+    if not base_path.exists():
         raise FileNotFoundError(
-            "The default configuration file configs/default.yaml was not found."
+            f"The base configuration file {base_path} was not found."
         )
 
-    config = _load_yaml(default_path)
+    config = _load_yaml(base_path)
 
-    for path_str in config_paths:
+    for path_str in extra_paths:
         override_path = Path(path_str)
         if not override_path.exists():
             raise FileNotFoundError(f"Config override not found: {override_path}")
