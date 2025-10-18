@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Sequence
 
 import numpy as np
+import pandas as pd
 
 LOGGER = logging.getLogger(__name__)
 
