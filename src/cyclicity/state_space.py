@@ -51,7 +51,15 @@ def estimate_cycle(series: pd.Series, config: StateSpaceConfig) -> Dict[str, flo
             "signal_to_noise": np.nan,
         }
 
-    cycle = pd.Series(res.cycle_smoothed, index=series.index, name=f"{series.name}_cycle")
+    if hasattr(res, "cycle_smoothed"):
+        cycle_values = res.cycle_smoothed
+    elif hasattr(res, "cycle") and hasattr(res.cycle, "smoothed"):
+        cycle_values = res.cycle.smoothed
+    else:
+        LOGGER.warning("State-space results do not expose smoothed cycle; returning NaNs")
+        cycle_values = np.full(len(series), np.nan)
+
+    cycle = pd.Series(cycle_values, index=series.index, name=f"{series.name}_cycle")
     resid = pd.Series(res.resid, index=series.index)
 
     if cycle.isna().all() or resid.isna().all():

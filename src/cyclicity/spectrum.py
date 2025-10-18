@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Tuple
 
 import numpy as np
@@ -36,9 +36,9 @@ class SpectrumBand:
 @dataclass
 class SpectrumConfig:
     method: str = "welch"
-    welch: WelchConfig = WelchConfig()
-    lomb_scargle: LombScargleConfig = LombScargleConfig()
-    band: SpectrumBand = SpectrumBand()
+    welch: WelchConfig = field(default_factory=WelchConfig)
+    lomb_scargle: LombScargleConfig = field(default_factory=LombScargleConfig)
+    band: SpectrumBand = field(default_factory=SpectrumBand)
 
 
 @dataclass
