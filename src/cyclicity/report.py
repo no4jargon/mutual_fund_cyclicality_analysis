@@ -94,10 +94,10 @@ def generate_reports(config_path: str = "configs/default.yml") -> Dict[str, pd.D
             spectrum_res = compute_spectrum(detrended, cfg["spectrum"])
             harmonic_metrics = harmonic_regression(detrended, spectrum_res.dominant_period, cfg["harmonic"])
 
-            hilbert_input = detrended.fillna(method="ffill").fillna(method="bfill")
+            hilbert_input = detrended.ffill().bfill()
             hilbert_res = hilbert_cycle(hilbert_input, cfg["hilbert"])
 
-            state_res = estimate_cycle(detrended.fillna(method="ffill").fillna(method="bfill"), cfg["state_space"])
+            state_res = estimate_cycle(detrended.ffill().bfill(), cfg["state_space"])
 
             turning_df = detect_turning_points(hilbert_res["cycle"], cfg["turning_points"])
             if not turning_df.empty:
