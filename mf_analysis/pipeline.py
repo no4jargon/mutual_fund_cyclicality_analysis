@@ -46,16 +46,24 @@ def ingest_data(
     logger.info("Loading NAV history from %s", nav_history_path)
     try:
         nav_history = _normalise_columns(pd.read_parquet(nav_history_path))
+        logger.info(f"Normalized NAV history columns: {nav_history.columns.tolist()}")
+        # If Scheme_Code is the index, reset it to a column
+        if nav_history.index.name and nav_history.index.name.lower() in ["scheme_code"]:
+            nav_history.reset_index(inplace=True)
+            logger.info("Reset Scheme_Code index to column.")
     except ImportError as exc:
         raise RuntimeError(
             "Reading parquet files requires the `pyarrow` or `fastparquet` packages."
         ) from exc
-    _ensure_column(nav_history, ["scheme_code"], "scheme_code")
+    
+    # Ensure correct columns
+    _ensure_column(nav_history, ["Scheme_Code"], "scheme_code")
     nav_history["scheme_code"] = nav_history["scheme_code"].astype(str)
-    _ensure_column(nav_history, ["date", "nav_date", "latest_nav_date"], "date")
-    _ensure_column(nav_history, ["nav", "nav_value", "nav_price"], "nav")
+    _ensure_column(nav_history, ["date"], "date")
+    _ensure_column(nav_history, ["nav"], "nav")
     nav_history["nav"] = pd.to_numeric(nav_history["nav"], errors="coerce")
     nav_history.dropna(subset=["nav"], inplace=True)
+    logger.debug(f"Final NAV history columns after mapping: {nav_history.columns.tolist()}")
 
     schemes_set = set(schemes or [])
     if schemes_set:
