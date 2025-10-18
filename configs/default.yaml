@@ -1,0 +1,25 @@
+data:
+  metadata: mutual_fund_data.csv
+  nav_history: mutual_fund_nav_history.parquet
+processing:
+  detrend:
+    window: 30
+  scoring:
+    lookback: 90
+    zscore_min_std: 1.0e-6
+  signal_threshold: 0.5
+backtest:
+  initial_capital: 100000.0
+  transaction_cost: 0.001
+  entry_threshold: 0.5
+  exit_threshold: 0.2
+output:
+  base_dir: outputs
+  analysis_dir: analysis
+  tables_subdir: tables
+  plots_subdir: plots
+  backtest_dir: backtests
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+  datefmt: "%Y-%m-%d %H:%M:%S"
