@@ -31,7 +31,7 @@ def backtest_bottom_signals(
 
     records: List[Dict[str, object]] = []
 
-    for date, is_signal in signal_series.iteritems():
+    for date, is_signal in signal_series.items():
         if not is_signal:
             continue
         if date not in nav_series.index:
