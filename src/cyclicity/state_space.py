@@ -33,20 +33,34 @@ def estimate_cycle(series: pd.Series, config: StateSpaceConfig) -> Dict[str, flo
             "signal_to_noise": np.nan,
         }
 
+    prepared = series.copy()
+    if isinstance(prepared.index, (pd.DatetimeIndex, pd.PeriodIndex)):
+        freq = getattr(prepared.index, "freq", None)
+        if freq is None:
+            inferred = pd.infer_freq(prepared.index)
+            if inferred is not None:
+                try:
+                    prepared = prepared.asfreq(inferred)
+                except (ValueError, TypeError):
+                    LOGGER.debug("Unable to asfreq series to inferred frequency %s", inferred)
+    period = float(max(config.cycle_period, 2.0))
+    lower_bound = max(period * 0.8, 2.0)
+    upper_bound = max(period * 1.2, lower_bound + 1.0)
+
     mod = UnobservedComponents(
-        series,
+        prepared,
         level="local level",
         cycle=True,
         stochastic_cycle=True,
         damped_cycle=True,
-        cycle_period=max(config.cycle_period, 2),
+        cycle_period_bounds=(lower_bound, upper_bound),
     )
     try:
         res = mod.fit(disp=False)
     except Exception as err:  # pragma: no cover - statsmodels specific
         LOGGER.error("State-space model failed: %s", err)
         return {
-            "cycle": pd.Series(np.nan, index=series.index, name=f"{series.name}_cycle"),
+            "cycle": pd.Series(np.nan, index=prepared.index, name=f"{series.name}_cycle"),
             "persistence": np.nan,
             "signal_to_noise": np.nan,
         }
@@ -57,10 +71,10 @@ def estimate_cycle(series: pd.Series, config: StateSpaceConfig) -> Dict[str, flo
         cycle_values = res.cycle.smoothed
     else:
         LOGGER.warning("State-space results do not expose smoothed cycle; returning NaNs")
-        cycle_values = np.full(len(series), np.nan)
+        cycle_values = np.full(len(prepared), np.nan)
 
-    cycle = pd.Series(cycle_values, index=series.index, name=f"{series.name}_cycle")
-    resid = pd.Series(res.resid, index=series.index)
+    cycle = pd.Series(cycle_values, index=prepared.index, name=f"{series.name}_cycle")
+    resid = pd.Series(res.resid, index=prepared.index)
 
     if cycle.isna().all() or resid.isna().all():
         persistence = np.nan
