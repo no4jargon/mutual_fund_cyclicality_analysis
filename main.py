@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Iterable
 
@@ -9,7 +10,7 @@ from cyclicity.report import generate_reports
 
 from mf_analysis.backtest import run_backtest
 from mf_analysis.config import load_config
-from mf_analysis.logging_utils import configure_logging
+from mf_analysis.logging_utils import setup_logging
 from mf_analysis.pipeline import get_signals_path, run_analysis_pipeline
 
 logger = logging.getLogger(__name__)
@@ -97,7 +98,17 @@ def main() -> None:
 
     overrides = args.config_overrides or []
     config = _load_configuration(args.default_config, overrides)
-    configure_logging(config.get("logging"))
+
+    logging_settings = config.get("logging")
+    if isinstance(logging_settings, Mapping):
+        setup_logging(
+            level=str(logging_settings.get("level", "INFO")),
+            filename=logging_settings.get("file"),
+            fmt=logging_settings.get("format"),
+            datefmt=logging_settings.get("datefmt"),
+        )
+    else:
+        setup_logging()
 
     schemes = args.schemes
 

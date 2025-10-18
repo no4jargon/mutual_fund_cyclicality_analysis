@@ -1,22 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
 import logging
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-def _load_setup_logging():
-    utils_path = Path(__file__).resolve().parents[1] / "src" / "cyclicity" / "utils.py"
-    spec = importlib.util.spec_from_file_location("cyclicity.utils", utils_path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module.setup_logging
-
-
-setup_logging = _load_setup_logging()
+from mf_analysis.logging_utils import setup_logging
 
 
 def test_setup_logging_creates_parent_directory(tmp_path) -> None:
