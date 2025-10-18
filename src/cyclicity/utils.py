@@ -159,6 +159,8 @@ def robust_zscore(values: Sequence[float]) -> np.ndarray:
     """Compute robust z-scores using the median and MAD."""
 
     arr = np.asarray(list(values), dtype=float)
+    if arr.size == 0 or np.isnan(arr).all():
+        return np.full_like(arr, np.nan)
     median = np.nanmedian(arr)
     mad = np.nanmedian(np.abs(arr - median))
     if mad == 0 or np.isnan(mad):

@@ -58,7 +58,9 @@ def load_nav_history(
     df = prepare_nav_history(pd.read_parquet(parquet_path))
 
     def _resample(group: pd.DataFrame) -> pd.DataFrame:
-        scheme_code = group["scheme_code"].iloc[0]
+        scheme_code = getattr(group, "name", None)
+        if scheme_code is None and "scheme_code" in group.columns:
+            scheme_code = group["scheme_code"].iloc[0]
         monthly = (
             group.set_index("date")["nav"].resample("ME").last().dropna().to_frame("nav")
         )
@@ -66,7 +68,9 @@ def load_nav_history(
         return monthly.reset_index()
 
     LOGGER.info("Resampling NAV history to month-end frequency")
-    monthly_df = df.groupby("scheme_code", group_keys=False).apply(_resample)
+    monthly_df = df.groupby("scheme_code", group_keys=False).apply(
+        _resample, include_groups=False
+    )
 
     counts = monthly_df.groupby("scheme_code")["date"].count()
     valid_schemes = counts[counts >= min_points].index
