@@ -1,179 +1,147 @@
-# Indian Mutual Fund Dataset 📊
+# Indian Mutual Fund Cyclicality Analysis 📊
 
-<p align="center">
-  <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shields.io/badge/License-MIT-white.svg?style=for-the-badge" alt="License: MIT">
-  </a>
-  <a href="https://www.kaggle.com/datasets/tharunreddy2911/mutual-fund-data">
-    <img src="https://img.shields.io/badge/Kaggle-Scheme Dataset-blue.svg?style=for-the-badge&logo=kaggle" alt="Kaggle Dataset">
-  </a>
-  <a href="https://www.kaggle.com/datasets/tharunreddy2911/mutual-fund-historic-nav-data">
-    <img src="https://img.shields.io/badge/Kaggle-Historic NAV Dataset-blue.svg?style=for-the-badge&logo=kaggle" alt="Kaggle Dataset">
-  </a>
-  <a href="#update-frequency">
-    <img src="https://img.shields.io/badge/Updated-Daily-brightgreen.svg?style=for-the-badge" alt="Update Frequency">
-  </a>
-  <a href="https://flatgithub.com/InertExpert2911/Mutual_Fund_Data?filename=mutual_fund_data.csv">
-    <img src="https://img.shields.io/badge/Explore%20Scheme%20Data%20(CSV)-Flat%20Data%20Viewer-orange.svg?style=for-the-badge" alt="View Scheme Data CSV">
-  </a>
-  <a href="https://github.com/InertExpert2911/Mutual_Fund_Data/commits/main/">
-    <img src="https://img.shields.io/github/last-commit/InertExpert2911/Mutual_Fund_Data.svg?style=for-the-badge&" alt="GitHub last commit">
-  </a>
-</p>
-
-This repository hosts a **daily-updated dataset** focusing on Indian Mutual Fund schemes. It is comprised of two main data files:
-1.  `mutual_fund_data.csv`: Contains the latest snapshot of scheme details, including Net Asset Value (NAV), Asset Management Company (AMC), Assets Under Management (AUM), scheme categories, and more.
-2.  `mutual_fund_nav_history.parquet`: Provides extensive historical Net Asset Value (NAV) data for time-series analysis.
-
-The data is automatically fetched and processed daily via a Kaggle Notebook.
+This repository bundles a daily-updated Indian mutual fund dataset together with a configurable analysis pipeline for detecting cyclical behaviour, ranking schemes, and stress-testing contrarian or momentum allocation ideas.
 
 ## Table of Contents
 
-* [📜 Description](#-description)
-* [💻 Explore the Data Online](#-explore-the-data-online)
-* [💾 How to Use](#-how-to-use)
-* [🔍 What's Inside](#-whats-inside)
-    * [Current Scheme Details: `mutual_fund_data.csv`](#--current-scheme-details-mutual_fund_datacsv)
-    * [Historical NAV Data: `mutual_fund_nav_history.parquet`](#--historical-nav-data-mutual_fund_nav_historyparquet)
-* [📈 Calculable Metrics & Analyses (from Historical NAV Data)](#-calculable-metrics--analyses-from-historical-nav-data)
-* [⏱️ Update Frequency](#️-update-frequency)
-* [💡 Potential Uses](#-potential-uses)
-* [🤝 Contributing](#-contributing)
-* [🙏 Acknowledgements](#-acknowledgements)
-* [📄 License](#-license)
+- [🔟 Methodology Overview](#-methodology-overview)
+- [⚖️ Assumptions & Limitations](#️-assumptions--limitations)
+- [⚙️ Setup](#️-setup)
+- [🧾 Configuration](#-configuration)
+- [🖥️ CLI Usage](#️-cli-usage)
+- [📤 Outputs & Plots](#-outputs--plots)
+- [🗃️ Dataset Reference](#️-dataset-reference)
+- [🤝 Contributing](#-contributing)
+- [🙏 Acknowledgements](#-acknowledgements)
+- [📄 License](#-license)
 
-## 📜 Description
+## 🔟 Methodology Overview
 
-This dataset provides a comprehensive view of the Indian mutual fund market.
-* The `mutual_fund_data.csv` file offers a snapshot of over **9,000+** mutual fund schemes, featuring the latest Net Asset Value (NAV) & Assets Under Management (AUM) data, refreshed daily.
-* The `mutual_fund_nav_history.parquet` file contains over **20 Million+ historical NAV records** for in-depth performance analysis, with **6,000+ new NAV records added daily.**
+The default workflow implemented by the pipeline follows these ten stages:
 
-Together, these files serve as a valuable resource for financial analysis, comparison, backtesting, and tracking of the Indian mutual fund landscape.
+1. **Ingest latest data** from `mutual_fund_nav_history.parquet` and `mutual_fund_data.csv` into a harmonised business-day index.
+2. **Forward-fill and resample NAVs** to the requested frequency (business days by default) while logging missing data coverage.
+3. **Compute log returns** and basic descriptive statistics to flag stale or anomalous series.
+4. **Apply Hodrick–Prescott (HP) detrending** and an exponential moving average smoother to separate trend, cycle, and noise components.
+5. **Measure spectral power** within 30–730 day periodicities using a Hann window to identify dominant cyclical signatures.
+6. **Score each scheme** on momentum, mean reversion, spectral strength, and drawdown resilience; the weights are configurable in `configs/default.yaml`.
+7. **Detect candidate bottoms** when the cyclical z-score breaches −1.5 and the post-breach rebound turns positive.
+8. **Construct ranking tables** combining scores and bottom detections, including metadata such as category and AMC.
+9. **Backtest selections** across 3-, 6-, and 12-month horizons with configurable transaction costs and rebalance cadence.
+10. **Persist artefacts and visualisations** (tables, JSON summaries, PNG plots) under `artifacts/`, caching expensive intermediate tensors for repeatable runs.
 
-## 💻 Explore the Data Online
+## ⚖️ Assumptions & Limitations
 
-Instantly explore, filter, and sort the `mutual_fund_data.csv` (scheme details) directly in your browser:
+- The HP-filter lambda and EMA span are tuned for daily business data; extreme illiquidity or highly seasonal funds may require recalibration.
+- Spectral analysis assumes regularly spaced observations. Schemes with long missing stretches are automatically excluded from spectral scoring.
+- Backtests are long-only and do not include taxes, exit loads, or cash drag. Interpret projected returns as relative signals, not absolute forecasts.
+- Strategy metrics depend on historical NAV fidelity. Corporate actions or scheme mergers reflected late in the source files can introduce artefacts.
+- Default rankings treat schemes independently; category- or AMC-level capacity constraints must be handled externally.
 
+## ⚙️ Setup
 
-<a href="https://www.kaggle.com/datasets/tharunreddy2911/mutual-fund-data">
-    <img src="https://img.shields.io/badge/Kaggle-Scheme Dataset-blue.svg?style=flat-square&logo=kaggle" alt="Kaggle Dataset">
-  </a>
-  <a href="https://www.kaggle.com/datasets/tharunreddy2911/mutual-fund-historic-nav-data">
-    <img src="https://img.shields.io/badge/Kaggle-Historic NAV Dataset-blue.svg?style=flat-square&logo=kaggle" alt="Kaggle Dataset">
-  </a>
-<a href="https://flatgithub.com/InertExpert2911/Mutual_Fund_Data?filename=mutual_fund_data.csv">
-  <img src="https://img.shields.io/badge/Explore%20Scheme%20Data%20(CSV)-Flat%20Data%20Viewer-orange.svg?style=flat-square" alt="Explore CSV with Flat Data Viewer">
-</a>
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-org/mutual_fund_cyclicality_analysis.git
+   cd mutual_fund_cyclicality_analysis
+   ```
+2. **Create a Python environment (3.10 or newer recommended)**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+   ```
+3. **Install dependencies**
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+4. **Verify data files** (`mutual_fund_data.csv`, `mutual_fund_nav_history.parquet`) are present or downloaded from the linked Kaggle sources.
 
-*(Note: The Parquet file is best explored after downloading due to its size and format.)*
+Caching behaviour: the pipeline stores intermediate frames under `artifacts/cache` (configurable) and reuses them when `enable_caching` is `true`. Delete the cache directory to force a full recomputation.
 
-## 💾 How to Use
+Logging: runtime logging defaults to `INFO` level with structured console output (using `rich`). Increase verbosity with `--log-level DEBUG` or the corresponding configuration field.
 
-1.  **Download:** Clone the repository or download the desired files (`mutual_fund_data.csv`, `mutual_fund_nav_history.parquet`) directly.
-2.  **Load:** Use your favorite data analysis tool.
+Failure handling: non-critical steps (e.g., spectral fit for a single scheme) emit warnings and skip the offending asset, while fatal errors (file not found, schema mismatch) respect the `fail_fast` flag—set it to `false` to continue processing remaining schemes.
 
-    * **For `mutual_fund_data.csv` (Scheme Details):**
-        ```python
-        import pandas as pd
-        df_schemes = pd.read_csv('mutual_fund_data.csv')
-        print("Scheme Details Data:")
-        print(df_schemes.head())
-        ```
-    * **For `mutual_fund_nav_history.parquet` (Historical NAVs):**
-        You'll likely need `pandas` and potentially `pyarrow` or `fastparquet` installed.
-        ```python
-        import pandas as pd
-        # Ensure you have pyarrow or fastparquet installed:
-        # pip install pandas pyarrow
-        # or
-        # pip install pandas fastparquet
-        df_nav_history = pd.read_parquet('mutual_fund_nav_history.parquet')
-        print("\nHistorical NAV Data:")
-        print(df_nav_history.head())
-        ```
-3.  **Analyze:** Explore the data based on your requirements!
+## 🧾 Configuration
 
-## 🔍 What's Inside
+Configuration files live under `configs/`. The provided [`configs/default.yaml`](configs/default.yaml) contains:
 
-### 📋 Current Scheme Details: `mutual_fund_data.csv`
+- **Data locations** (`nav_history_path`, `scheme_metadata_path`, `output_root`).
+- **Preprocessing options** (frequency, fill method, log return toggle).
+- **Trend/cycle parameters** (HP lambda, EMA span).
+- **Spectral settings** (window type, period bounds, detrend flag).
+- **Scoring weights** for the four composite metrics and normalisation method.
+- **Bottom detection logic** (lookback, z-score threshold, rebound requirement).
+- **Backtest horizons** and transaction assumptions.
+- **Runtime controls** (caching directory, logging level, fail-fast toggle).
 
-This file provides a daily snapshot of various details for each mutual fund scheme.
+Modify or extend this YAML to suit alternative workflows, then reference it via the CLI.
 
-* **`Scheme_Code`**: Unique code assigned to a mutual fund scheme.
-* **`AMC`**: The **Asset Management Company** that manages the mutual fund.
-* **`Scheme_Name`**: Name of the mutual fund scheme.
-* **`Scheme_NAV_Name`**: Detailed name of the scheme often indicating the specific plan (*e.g., Growth, IDCW/Dividend*).
-* **`ISIN_Div_Payout/Growth`**: Unique ISIN (*International Securities Identification Number*) for dividend payout or growth option of the scheme.
-* **`ISIN_Div_Reinvestment`**: Unique ISIN for dividend reinvestment option of the scheme.
-* **`ISIN_Div_Payout/Growth/Div_Reinvestment`**: Comprehensive ISINs covering dividend payout, growth, or dividend reinvestment options.
-* **`Launch_Date`**: Date when the mutual fund scheme was launched.
-* **`Closure_Date`**: Date when the mutual fund scheme was closed (*if applicable*).
-* **`Scheme_Type`**: How the fund is structured (*e.g., Open Ended, Close Ended*).
-* **`Scheme_Category`**: Classification of the scheme based on its investment strategy (*e.g., Equity Large Cap, Debt Liquid Fund*).
-* **`NAV`**: **Latest Net Asset Value** per unit of the fund scheme.
-* **`Latest_NAV_Date`**: Date on which the **latest NAV** was declared.
-* **`Scheme_Min_Amt`**: Minimum investment amount required to invest in the scheme.
-* **`AAUM_Quarter`**: The quarter for which the average AUM is reported (*e.g., January - March 2025*).
-* **`Average_AUM_Cr`**: Average assets under management in crores for the scheme.
+## 🖥️ CLI Usage
 
-### ⏳ Historical NAV Data: `mutual_fund_nav_history.parquet`
+The pipeline exposes a command-line interface that accepts a configuration file:
 
-This file contains the daily time-series of Net Asset Values, crucial for performance analysis and backtesting. It includes:
+```bash
+python -m pipeline.run --config configs/default.yaml
+```
 
-* **`Scheme_Code`**: 🔑 Unique code assigned to a mutual fund scheme. (Links to `mutual_fund_data.csv`)
-* **`Date`**: 📅 The specific date for which the NAV is reported (e.g., `YYYY-MM-DD`).
-* **`NAV`**: 💰 The Net Asset Value per unit of the fund scheme on the given `Date`.
+Common overrides:
 
-This file is designed for efficient storage and quick loading of large historical datasets.
+```bash
+# Increase logging verbosity and disable caching for a fresh run
+python -m pipeline.run --config configs/default.yaml --log-level DEBUG --no-cache
 
-## 📈 Calculable Metrics & Analyses (from `mutual_fund_nav_history.parquet`)
+# Point to a different NAV snapshot and emit outputs to a custom folder
+python -m pipeline.run \
+  --config configs/default.yaml \
+  --nav-history data/new_nav_history.parquet \
+  --output-root results/2024-06-01
+```
 
-The historical NAV data empowers you to quickly derive powerful insights like:
+The CLI validates configuration keys, surfaces warnings when defaults are applied, and writes a run summary (`run_metadata.json`) to the output directory for reproducibility.
 
-* **Performance & Returns 🚀:**
-    * Absolute & Annualized (CAGR) Returns
-    * Rolling & Point-to-Point Returns
-    * Daily/Log Returns
-* **Risk & Volatility 📉:**
-    * Standard Deviation
-    * Sharpe & Sortino Ratios (needs risk-free rate)
-    * Max Drawdown
-    * Beta & Alpha (needs benchmark data)
-* **Trends & Momentum 📊:**
-    * Moving Averages (SMA, EMA)
-    * Rate of Change (ROC)
-* **Comparisons & Market View 🧐 (when combined with scheme data):**
-    * Fund Performance Rankings
-    * Correlations Between Funds
-* **Basic Stats 🔢:**
-    * Highest/Lowest NAV over periods
-    * Average/Median NAV over periods
+## 📤 Outputs & Plots
 
-## ⏱️ Update Frequency
+Each execution produces the following structure under the configured `output_root` (defaults to `artifacts/`):
 
-* **Daily Updates**: Both `mutual_fund_data.csv` (scheme details) and `mutual_fund_nav_history.parquet` (new daily NAVs) are automatically refreshed every day via a scheduled Kaggle Notebook.
-* Data typically reflects the NAV from the **previous trading day**.
-* The historical NAV file (`mutual_fund_nav_history.parquet`) grows daily with new NAV records for all tracked schemes.
+```
+artifacts/
+├── cache/                     # Optional cached parquet/npz intermediates
+├── logs/                      # Timestamped structured logs
+├── rankings/latest.csv        # Scheme-level composite ranking table
+├── bottoms/detections.csv     # Detected cyclical bottoms with signal metadata
+├── backtests/
+│   ├── horizon_063d.csv       # Rolling 3-month backtest summary
+│   ├── horizon_126d.csv       # Rolling 6-month backtest summary
+│   └── horizon_252d.csv       # Rolling 12-month backtest summary
+└── plots/
+    ├── scheme_<code>_cycle.png   # Cycle vs. trend decomposition
+    ├── scheme_<code>_spectra.png # Spectral density snapshots
+    └── scoreboard.png            # Top-N ranking heatmap
+```
 
-## 💡 Potential Uses
+Use these artefacts directly in dashboards or downstream portfolio construction workflows.
 
-* ✅ **Scheme Discovery & Comparison:** Use `mutual_fund_data.csv` to filter and compare funds based on AMC, category, AUM, etc.
-* ✅ **Performance Backtesting:** Leverage `mutual_fund_nav_history.parquet` to test investment strategies over historical periods.
-* ✅ **Trend Analysis:** Analyze NAV movements and calculate momentum indicators from the historical data.
-* ✅ **Risk Assessment:** Calculate volatility, Sharpe ratio, and other risk metrics for individual funds.
-* ✅ **Market Overview:** Get a quick snapshot of the Indian mutual fund market structure using the scheme details.
-* ✅ **Dashboard Building:** Create visualizations of the Indian MF landscape, tracking NAVs and performance.
+## 🗃️ Dataset Reference
+
+Two core data files power the analysis:
+
+1. **`mutual_fund_data.csv`** — Latest scheme snapshot with NAV, AMC, AUM, category, ISINs, launch/closure dates, and other metadata.
+2. **`mutual_fund_nav_history.parquet`** — Daily historical NAV series for over 20 million observations across Indian mutual fund schemes.
+
+Both files are refreshed daily through a Kaggle Notebook maintained by the dataset author. The Parquet file is best downloaded locally due to its size.
 
 ## 🤝 Contributing
 
-While the data is updated automatically, contributions to improve the README, add analysis examples (e.g., in a separate notebook), or suggest enhancements are welcome! Please feel free to open an issue or submit a pull request.
+Contributions that improve documentation, extend the pipeline, or add validation notebooks are welcome. Please open an issue describing your proposal before submitting a pull request.
 
 ## 🙏 Acknowledgements
 
-* Data is sourced from the **Association of Mutual Funds in India (AMFI)**.
-* This dataset is compiled for educational and analytical purposes.
-* **Always consult a financial advisor before making investment decisions.**
+- Data sourced from the **Association of Mutual Funds in India (AMFI)**.
+- Dataset compiled and published via Kaggle by community contributors.
+- **Always consult a financial adviser before making investment decisions.**
 
 ## 📄 License
 
-This dataset is shared under the [MIT License](https://opensource.org/licenses/MIT).
+This project is released under the [MIT License](https://opensource.org/licenses/MIT).
