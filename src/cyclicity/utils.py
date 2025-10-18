@@ -179,10 +179,20 @@ def weighted_average(scores: Mapping[str, float], weights: Mapping[str, float]) 
 
 
 def setup_logging(level: str = "INFO", filename: Optional[str] = None) -> None:
-    logging.basicConfig(level=getattr(logging, level.upper(), logging.INFO),
-                        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-                        filename=filename,
-                        filemode="a")
+    """Initialise logging and ensure the target directory exists."""
+
+    log_kwargs: Dict[str, Any] = {
+        "level": getattr(logging, level.upper(), logging.INFO),
+        "format": "%(asctime)s %(levelname)s %(name)s: %(message)s",
+        "filemode": "a",
+    }
+
+    if filename:
+        log_path = Path(filename)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        log_kwargs["filename"] = str(log_path)
+
+    logging.basicConfig(**log_kwargs)
     if filename:
         # Also add console handler when logging to file
         console = logging.StreamHandler()
