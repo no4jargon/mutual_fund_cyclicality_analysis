@@ -1,55 +1,6 @@
 data:
-  nav_history_path: "mutual_fund_nav_history.parquet"
-  scheme_metadata_path: "mutual_fund_data.csv"
-  output_root: "artifacts"
-
-preprocessing:
-  frequency: "B"
-  fill_method: "ffill"
-  log_returns: true
-
-trend_cycle_separation:
-  detrend:
-    method: "hp_filter"
-    lambda: 129600
-    rolling_window_days: 252
-  smoothing:
-    method: "ema"
-    span_days: 63
-
-spectral_analysis:
-  window: "hann"
-  detrend: true
-  min_period_days: 30
-  max_period_days: 730
-  sampling: "business_day"
-
-scoring:
-  weights:
-    momentum_score: 0.35
-    mean_reversion_score: 0.25
-    spectral_strength_score: 0.25
-    drawdown_resilience_score: 0.15
-  normalization: "zscore"
-
-bottom_detection:
-  lookback_days: 180
-  zscore_threshold: -1.5
-  require_positive_rebound: true
-
-backtest:
-  horizons_days: [63, 126, 252]
-  transaction_cost_bps: 15
-  rebalance_frequency_days: 21
-  top_n: 10
-
-runtime:
-  cache_dir: "artifacts/cache"
-  enable_caching: true
-  logging_level: "INFO"
-  fail_fast: false
-  metadata: mutual_fund_data.csv
-  nav_history: mutual_fund_nav_history.parquet
+  metadata: "mutual_fund_data.csv"
+  nav_history: "data/mutual_fund_nav_history.parquet"
 
 processing:
   detrend:
@@ -60,7 +11,6 @@ processing:
   signal_threshold: 0.5
 
 backtest:
-  initial_capital: 100000.0
   transaction_cost: 0.001
   entry_threshold: 0.5
   exit_threshold: 0.2

@@ -20,7 +20,11 @@ def _prepare_signals(signals_path: Path, schemes: Iterable[str] | None) -> pd.Da
             "Signal file not found. Run the analyze command first to generate signals."
         )
     logger.info("Loading precomputed signals from %s", signals_path)
-    signals = pd.read_csv(signals_path, parse_dates=["date"])
+    signals = pd.read_csv(
+        signals_path,
+        parse_dates=["date"],
+        dtype={"scheme_code": str},
+    )
     if schemes:
         schemes_set = set(schemes)
         signals = signals[signals["scheme_code"].isin(schemes_set)]
