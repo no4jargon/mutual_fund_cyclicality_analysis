@@ -25,9 +25,9 @@ def backtest_bottom_signals(
     """Evaluate bottom signals on forward returns."""
 
     if signal_series.index.freq is None:
-        signal_series = signal_series.asfreq("M")
+        signal_series = signal_series.asfreq("ME")
     if nav_series.index.freq is None:
-        nav_series = nav_series.asfreq("M")
+        nav_series = nav_series.asfreq("ME")
 
     records: List[Dict[str, object]] = []
 

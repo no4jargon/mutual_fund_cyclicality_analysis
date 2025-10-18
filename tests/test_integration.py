@@ -132,7 +132,7 @@ def test_cyclicity_generate_reports_smoke(tmp_path: Path, sample_scheme_codes: l
         tmp_path,
         [scheme_code],
         periods=72,
-        freq="M",
+        freq="ME",
         start="2015-01-31",
     )
 
