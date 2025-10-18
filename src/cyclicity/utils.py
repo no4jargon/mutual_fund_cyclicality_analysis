@@ -13,6 +13,8 @@ import pandas as pd
 from scipy import signal
 from scipy.linalg import toeplitz
 
+from mf_analysis.logging_utils import setup_logging
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -176,29 +178,6 @@ def weighted_average(scores: Mapping[str, float], weights: Mapping[str, float]) 
     if total_weight == 0:
         return float("nan")
     return total_score / total_weight
-
-
-def setup_logging(level: str = "INFO", filename: Optional[str] = None) -> None:
-    """Initialise logging and ensure the target directory exists."""
-
-    log_kwargs: Dict[str, Any] = {
-        "level": getattr(logging, level.upper(), logging.INFO),
-        "format": "%(asctime)s %(levelname)s %(name)s: %(message)s",
-        "filemode": "a",
-    }
-
-    if filename:
-        log_path = Path(filename)
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        log_kwargs["filename"] = str(log_path)
-
-    logging.basicConfig(**log_kwargs)
-    if filename:
-        # Also add console handler when logging to file
-        console = logging.StreamHandler()
-        console.setLevel(getattr(logging, level.upper(), logging.INFO))
-        console.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-        logging.getLogger().addHandler(console)
 
 
 def ensure_directory(path: str | os.PathLike[str]) -> None:
