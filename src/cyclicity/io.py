@@ -60,7 +60,7 @@ def load_nav_history(
     def _resample(group: pd.DataFrame) -> pd.DataFrame:
         scheme_code = group["scheme_code"].iloc[0]
         monthly = (
-            group.set_index("date")["nav"].resample("M").last().dropna().to_frame("nav")
+            group.set_index("date")["nav"].resample("ME").last().dropna().to_frame("nav")
         )
         monthly["scheme_code"] = scheme_code
         return monthly.reset_index()

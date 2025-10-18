@@ -16,6 +16,19 @@ class HarmonicConfig:
     harmonics: Sequence[int] = field(default_factory=lambda: [1, 2])
     regularization: float = 1e-3
 
+    def __post_init__(self) -> None:
+        """Coerce configuration values to validated numeric types."""
+
+        try:
+            self.harmonics = tuple(int(harmonic) for harmonic in self.harmonics)
+        except (TypeError, ValueError) as exc:  # pragma: no cover - defensive
+            raise ValueError("Harmonic harmonics must be convertible to integers") from exc
+
+        try:
+            self.regularization = float(self.regularization)
+        except (TypeError, ValueError) as exc:  # pragma: no cover - defensive
+            raise ValueError("Harmonic regularization must be a numeric value") from exc
+
 
 def harmonic_regression(series: pd.Series, period: float, config: HarmonicConfig) -> Dict[str, float]:
     """Fit harmonic regression and compute goodness-of-fit metrics."""

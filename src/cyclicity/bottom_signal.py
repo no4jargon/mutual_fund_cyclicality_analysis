@@ -34,7 +34,7 @@ def vote_bottom_signal(
         troughs = turning_points[turning_points["type"] == "trough"]
         if not troughs.empty:
             last_trough = troughs.iloc[-1]
-            months_since = (latest_date.to_period("M") - last_trough["date"].to_period("M")).n
+            months_since = (latest_date.to_period("ME") - last_trough["date"].to_period("ME")).n
             votes["recent_trough"] = months_since <= config.lookback_months
         else:
             votes["recent_trough"] = False
