@@ -5,6 +5,8 @@ import logging
 from pathlib import Path
 from typing import Iterable
 
+from cyclicity.report import generate_reports
+
 from mf_analysis.backtest import run_backtest
 from mf_analysis.config import load_config
 from mf_analysis.logging_utils import configure_logging
@@ -13,18 +15,26 @@ from mf_analysis.pipeline import get_signals_path, run_analysis_pipeline
 logger = logging.getLogger(__name__)
 
 
+DEFAULT_SIMPLE_CONFIG = "configs/simple.yaml"
+DEFAULT_ADVANCED_CONFIG = "configs/default.yml"
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Mutual fund cyclicality analysis and backtesting CLI",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    def _add_shared_arguments(subparser: argparse.ArgumentParser) -> None:
+    def _add_simple_arguments(subparser: argparse.ArgumentParser) -> None:
+        subparser.set_defaults(default_config=DEFAULT_SIMPLE_CONFIG)
         subparser.add_argument(
             "--config",
             action="append",
-            default=[],
-            help="Optional configuration override YAML file. Can be supplied multiple times.",
+            dest="config_overrides",
+            help=(
+                "Optional configuration override YAML file for the simple pipeline. "
+                "Can be supplied multiple times."
+            ),
         )
         subparser.add_argument(
             "--schemes",
@@ -32,11 +42,24 @@ def _parse_args() -> argparse.Namespace:
             help="Optional list of scheme codes to filter the analysis/backtest.",
         )
 
-    analyze_parser = subparsers.add_parser("analyze", help="Run the analysis pipeline")
-    _add_shared_arguments(analyze_parser)
+    report_parser = subparsers.add_parser(
+        "report",
+        help="Run the advanced cyclicality report pipeline",
+    )
+    report_parser.add_argument(
+        "--config",
+        default=DEFAULT_ADVANCED_CONFIG,
+        help=(
+            "Path to the advanced cyclicality configuration file."
+            f" Defaults to {DEFAULT_ADVANCED_CONFIG}."
+        ),
+    )
+
+    analyze_parser = subparsers.add_parser("analyze", help="Run the simple analysis pipeline")
+    _add_simple_arguments(analyze_parser)
 
     backtest_parser = subparsers.add_parser("backtest", help="Run the backtesting workflow")
-    _add_shared_arguments(backtest_parser)
+    _add_simple_arguments(backtest_parser)
 
     backtest_parser.add_argument(
         "--refresh",
@@ -47,8 +70,9 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _load_configuration(paths: Iterable[str]) -> dict:
-    return load_config(paths)
+def _load_configuration(default_config: str, overrides: Iterable[str]) -> dict:
+    config_paths = [default_config, *overrides]
+    return load_config(config_paths)
 
 
 def _ensure_signals(config: dict, schemes: Iterable[str] | None, refresh: bool) -> Path:
@@ -65,7 +89,14 @@ def _ensure_signals(config: dict, schemes: Iterable[str] | None, refresh: bool) 
 
 def main() -> None:
     args = _parse_args()
-    config = _load_configuration(args.config)
+    if args.command == "report":
+        config_path = Path(args.config)
+        logger.info("Running advanced cyclicality reports using %s", config_path)
+        generate_reports(str(config_path))
+        return
+
+    overrides = args.config_overrides or []
+    config = _load_configuration(args.default_config, overrides)
     configure_logging(config.get("logging"))
 
     schemes = args.schemes
