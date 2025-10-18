@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from common.data_ingestion import normalise_columns, prepare_nav_history
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,14 +19,6 @@ class PipelineArtifacts:
     scores: pd.DataFrame
     summary: pd.DataFrame
     signals_path: Path
-
-
-def _normalise_columns(frame: pd.DataFrame) -> pd.DataFrame:
-    renamed = frame.copy()
-    renamed.columns = [col.strip().lower().replace(" ", "_") for col in renamed.columns]
-    return renamed
-
-
 def _ensure_column(frame: pd.DataFrame, candidates: list[str], target: str) -> None:
     for candidate in candidates:
         if candidate in frame.columns:
@@ -40,31 +34,18 @@ def ingest_data(
     schemes: Iterable[str] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     logger.info("Loading metadata from %s", metadata_path)
-    metadata = _normalise_columns(pd.read_csv(metadata_path))
+    metadata = normalise_columns(pd.read_csv(metadata_path))
     _ensure_column(metadata, ["scheme_code"], "scheme_code")
     metadata["scheme_code"] = metadata["scheme_code"].astype(str)
     logger.info("Loading NAV history from %s", nav_history_path)
     try:
-        nav_history = _normalise_columns(pd.read_parquet(nav_history_path))
+        nav_history = prepare_nav_history(pd.read_parquet(nav_history_path))
         logger.info(f"Normalized NAV history columns: {nav_history.columns.tolist()}")
-        # If Scheme_Code is the index, reset it to a column
-        if nav_history.index.name and nav_history.index.name.lower() in ["scheme_code"]:
-            nav_history.reset_index(inplace=True)
-            logger.info("Reset Scheme_Code index to column.")
     except ImportError as exc:
         raise RuntimeError(
             "Reading parquet files requires the `pyarrow` or `fastparquet` packages."
         ) from exc
     
-    # Ensure correct columns
-    _ensure_column(nav_history, ["Scheme_Code"], "scheme_code")
-    nav_history["scheme_code"] = nav_history["scheme_code"].astype(str)
-    _ensure_column(nav_history, ["date"], "date")
-    _ensure_column(nav_history, ["nav"], "nav")
-    nav_history["nav"] = pd.to_numeric(nav_history["nav"], errors="coerce")
-    nav_history.dropna(subset=["nav"], inplace=True)
-    logger.debug(f"Final NAV history columns after mapping: {nav_history.columns.tolist()}")
-
     schemes_set = set(schemes or [])
     if schemes_set:
         metadata = metadata[metadata["scheme_code"].isin(schemes_set)]

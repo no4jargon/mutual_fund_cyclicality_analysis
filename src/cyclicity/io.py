@@ -8,6 +8,7 @@ from typing import Mapping, Optional
 import numpy as np
 import pandas as pd
 
+from common.data_ingestion import prepare_nav_history
 from .utils import CacheConfig, CacheManager
 
 LOGGER = logging.getLogger(__name__)
@@ -54,21 +55,7 @@ def load_nav_history(
         raise FileNotFoundError(f"NAV history file not found at {parquet_path}")
 
     LOGGER.info("Loading NAV history from %s", parquet_path)
-    df = pd.read_parquet(parquet_path)
-
-    expected_cols = {"scheme_code", "date", "nav"}
-    missing = expected_cols - set(df.columns)
-    if missing:
-        raise ValueError(f"Missing required columns in NAV history: {missing}")
-
-    df = df.copy()
-    df["scheme_code"] = df["scheme_code"].astype(str)
-    df["date"] = pd.to_datetime(df["date"], utc=True).dt.tz_localize(None)
-    df["nav"] = pd.to_numeric(df["nav"], errors="coerce")
-    df = df.dropna(subset=["scheme_code", "date", "nav"])
-
-    df = df.sort_values(["scheme_code", "date"])
-    df = df.drop_duplicates(subset=["scheme_code", "date"], keep="last")
+    df = prepare_nav_history(pd.read_parquet(parquet_path))
 
     def _resample(group: pd.DataFrame) -> pd.DataFrame:
         scheme_code = group["scheme_code"].iloc[0]
