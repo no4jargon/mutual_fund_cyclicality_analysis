@@ -29,7 +29,7 @@ dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
 where = [".", "src"]
-include = ["mf_analysis", "cyclicity", "simple_cyclicity"]
+include = ["mf_analysis", "cyclicity", "common", "simple_cyclicity"]
 
 [tool.uv]
 dev-dependencies = ["pytest>=8.0"]
