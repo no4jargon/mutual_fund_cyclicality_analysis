@@ -145,6 +145,32 @@ def _analysis_directories(output_config: dict) -> tuple[Path, Path, Path]:
     return analysis_dir, tables_dir, plots_dir
 
 
+def _plot_datapoint_histogram(nav_history: pd.DataFrame, output_config: dict) -> None:
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        logger.warning("matplotlib is not installed; skipping datapoint histogram plot.")
+        return
+
+    _, _, plots_dir = _analysis_directories(output_config)
+    plots_dir.mkdir(parents=True, exist_ok=True)
+
+    counts = nav_history.groupby("scheme_code").size()
+    if counts.empty:
+        logger.warning("No NAV history data available for histogram plot.")
+        return
+
+    figure, axis = plt.subplots(figsize=(10, 6))
+    axis.hist(counts.values, bins=min(50, len(counts)), edgecolor="black")
+    axis.set_title("NAV observations per scheme")
+    axis.set_xlabel("Number of data points")
+    axis.set_ylabel("Number of schemes")
+    plot_path = plots_dir / "scheme_datapoints_histogram.png"
+    figure.savefig(plot_path, bbox_inches="tight")
+    plt.close(figure)
+    logger.info("Wrote datapoint histogram to %s", plot_path)
+
+
 def generate_outputs(
     scored: pd.DataFrame,
     summary: pd.DataFrame,
@@ -196,6 +222,7 @@ def run_analysis_pipeline(config: dict, schemes: Iterable[str] | None = None) ->
     metadata_path = Path(config["data"]["metadata"])
     nav_history_path = Path(config["data"]["nav_history"])
     metadata, nav_history = ingest_data(metadata_path, nav_history_path, schemes)
+    _plot_datapoint_histogram(nav_history, config["output"])
     logger.info(
         "Processing %d schemes across %d NAV observations",
         metadata["scheme_code"].nunique(),
