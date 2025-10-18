@@ -1,0 +1,54 @@
+logging:
+  level: INFO
+  file: outputs/metrics/pipeline.log
+io:
+  parquet_path: data/mutual_fund_nav_history.parquet
+  min_points: 60
+detrend:
+  method: hp
+  hp_lambda: 129600
+  returns_window: 3
+spectrum:
+  method: welch
+  welch:
+    nperseg: 64
+    noverlap: 32
+  lomb_scargle:
+    minimum_frequency: 0.02
+    maximum_frequency: 0.5
+    samples_per_peak: 5
+  band:
+    low: 0.02
+    high: 0.35
+harmonic:
+  harmonics: [1, 2]
+  regularization: 1e-3
+hilbert:
+  lowcut: 0.02
+  highcut: 0.35
+  fs: 1.0
+  order: 3
+state_space:
+  cycle_period: 60
+  damping: 0.9
+scoring:
+  weights:
+    spectrum: 0.3
+    harmonic: 0.2
+    hilbert: 0.2
+    state_space: 0.2
+    turning_points: 0.1
+  guardrails:
+    min_cycles: 3
+    min_score: 0.0
+backtest:
+  lookback_months: 24
+  holding_period_months: 6
+report:
+  summary_csv: outputs/csv/cyclicity_summary.csv
+  turning_points_csv: outputs/csv/turning_points.csv
+  backtest_csv: outputs/csv/backtest_results.csv
+  plots_dir: outputs/plots
+cache:
+  enabled: true
+  directory: cache
