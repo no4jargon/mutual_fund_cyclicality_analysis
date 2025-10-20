@@ -7,7 +7,12 @@ from typing import Iterable
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+
+try:  # pragma: no cover - optional dependency
+    from tqdm import tqdm
+except ImportError:  # pragma: no cover - fallback when tqdm is absent
+    def tqdm(iterable, **kwargs):  # type: ignore
+        return iterable
 
 from .pipeline import ingest_data
 
