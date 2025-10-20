@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import numbers
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -213,7 +214,12 @@ def weighted_average(scores: Mapping[str, float], weights: Mapping[str, float]) 
     total_score = 0.0
     for key, weight in weights.items():
         score = scores.get(key)
-        if score is None or (isinstance(score, float) and math.isnan(score)):
+        if score is None:
+            continue
+        if isinstance(score, numbers.Real):
+            if math.isnan(float(score)):
+                continue
+        elif pd.isna(score):
             continue
         total_weight += weight
         total_score += score * weight
