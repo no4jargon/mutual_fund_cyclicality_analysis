@@ -1,9 +1,9 @@
 # Indian Mutual Fund Cyclicality Analysis 📊
 
 This repository bundles a daily-updated Indian mutual fund dataset together with a lightweight analysis pipeline for detecting
-basic cyclical behaviour, ranking schemes, and stress-testing simple allocation ideas. The codebase ships with pure-Python shims
-that emulate the small slice of the pandas, numpy, and yaml APIs used by the project so the toolkit runs without heavy binary
-dependencies.
+basic cyclical behaviour, ranking schemes, and stress-testing simple allocation ideas. The codebase targets the standard
+third-party scientific Python stack—most notably pandas, numpy, and pyyaml—exactly as declared in `pyproject.toml`, so the
+workflow runs against the official upstream packages.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ it:
 6. **Exports artefacts**—summary, turning points, and backtest CSVs—while ensuring the destination folders exist.【F:src/cyclicity/report.py†L129-L172】
 
 The repository retains the historical moving-average pipeline under `src/mf_analysis/` for users who prefer the legacy strategy.
-Both tracks share the same lightweight dependency footprint.
+Both tracks share the same dependency set resolved from `pyproject.toml`.
 
 ## ⚖️ Assumptions & Limitations
 
@@ -40,7 +40,7 @@ Both tracks share the same lightweight dependency footprint.
 - Returns are calculated using simple percentage changes without compounding or cash-flow adjustments.【F:src/cyclicity/report.py†L40-L52】
 - Turning points identify global extrema only; intra-cycle oscillations are not captured.【F:src/cyclicity/report.py†L60-L86】
 - Backtests are long-only and ignore costs—interpret results as relative signals, not absolute forecasts.【F:src/cyclicity/report.py†L88-L115】
-- Performance characteristics of the pure-Python shims on very large datasets have not been benchmarked; extend with care.【F:src/pandas/__init__.py†L1-L538】【F:src/numpy/__init__.py†L1-L392】
+- Performance characteristics of the core pandas/numpy workflow on very large datasets have not been benchmarked; extend with care.【F:src/cyclicity/report.py†L20-L172】
 
 ## ⚙️ Setup
 
@@ -54,9 +54,8 @@ Both tracks share the same lightweight dependency footprint.
    uv sync
    ```
    This creates a `.venv/` folder and resolves all runtime and development dependencies declared in `pyproject.toml`. The
-   dependency set is intentionally small because pandas, numpy, and yaml are provided through built-in shims under
-   `src/pandas`, `src/numpy`, and `src/yaml`. Keep future contributions compatible with these modules unless you explicitly add
-   the real third-party packages back into the environment.【F:src/pandas/__init__.py†L1-L538】【F:src/numpy/__init__.py†L1-L392】【F:src/yaml/__init__.py†L1-L90】
+   project expects the official third-party libraries listed there (including pandas, numpy, and pyyaml); commands run via the
+   CLI execute directly against those installed packages.
 3. **(Optional) Update the NAV history snapshot**
    The repository ships with a compact sample at `data/mutual_fund_nav_history.parquet` so the pipeline can be executed out of
    the box. Replace it with the latest full snapshot using the same filename to reproduce production-scale analytics.
@@ -95,8 +94,8 @@ uv run python main.py backtest --refresh
 
 Key behaviours:
 
-- `report` accepts a single `--config` path (defaulting to `configs/default.yml`). The simplified workflow uses only the shims and
-  helpers bundled in `src/`.
+- `report` accepts a single `--config` path (defaulting to `configs/default.yml`). The simplified workflow relies on the
+  third-party dependencies managed by `uv` alongside helpers bundled in `src/`.
 - `analyze` and `backtest` start from `configs/simple.yaml` and apply any extra `--config` files as overrides in the order
   provided. These commands also honour `--schemes` to focus on specific AMFI codes.【F:src/mf_analysis/pipeline.py†L28-L54】
 - All commands execute inside the managed `uv` environment—no manual activation is required.
@@ -105,7 +104,7 @@ Key behaviours:
 
 `report` honours the directories specified in `configs/default.yml` and writes three CSV artefacts (summary, turning points, and
 backtest results). Empty outputs are created as zero-byte files so downstream automation can rely on their presence. No plots are
-produced in the dependency-light workflow.【F:src/cyclicity/report.py†L129-L170】
+produced in the streamlined workflow.【F:src/cyclicity/report.py†L129-L170】
 
 `analyze` and `backtest` continue to write to `outputs/analysis/` and `outputs/backtests/` respectively, matching the structure
 defined in `configs/simple.yaml` and the behaviour of `mf_analysis.pipeline`. The tqdm progress bars degrade gracefully to a
